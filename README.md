@@ -2,6 +2,20 @@
 
 The call flow is to demonstrate how Twilio has control over the caller ID when calling user A followed by user B.
 
+This solution is useful as it allows for masked calls to be made without building complicated proxy solutions, and also orchestrate missed call callback flow. This allows compliant communication between brand and customer, and exposes as little data about the customer as required.
+
+This solution can be used both for brand and customer interactions where the is a single record owner for each customer. Example industries where this can be applicable:
+* Real estate
+* Marketplaces
+* Insurance
+* More generally, any sales team where call masking is necessary
+
+## Outbound Call Flow
+![Outbound Flow](https://raw.githubusercontent.com/kslamet/masked-calling/main/Diagrams/OutboundCallDiagram.png)
+
+## Inbound Call Flow
+![Inbound Flow](https://raw.githubusercontent.com/kslamet/masked-calling/main/Diagrams/InboundCallDiagram.png)
+
 ## What to expect
  * Sample Flow
  * Setup

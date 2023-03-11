@@ -1,0 +1,240 @@
+{
+    "description": "Masked Call Flow",
+    "states": [
+      {
+        "name": "Trigger",
+        "type": "trigger",
+        "transitions": [
+          {
+            "event": "incomingMessage"
+          },
+          {
+            "next": "Check_SFDC_for_agent",
+            "event": "incomingCall"
+          },
+          {
+            "event": "incomingConversationMessage"
+          },
+          {
+            "next": "CallAgent",
+            "event": "incomingRequest"
+          },
+          {
+            "event": "incomingParent"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      },
+      {
+        "name": "CallAgent",
+        "type": "make-outgoing-call-v2",
+        "transitions": [
+          {
+            "next": "say_call_connecting_agent",
+            "event": "answered"
+          },
+          {
+            "event": "busy"
+          },
+          {
+            "event": "noAnswer"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "machine_detection_speech_threshold": "2400",
+          "detect_answering_machine": false,
+          "offset": {
+            "x": 320,
+            "y": 190
+          },
+          "recording_channels": "mono",
+          "timeout": 60,
+          "machine_detection": "Enable",
+          "trim": "do-not-trim",
+          "record": false,
+          "machine_detection_speech_end_threshold": "1200",
+          "machine_detection_timeout": "30",
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}",
+          "machine_detection_silence_timeout": "5000"
+        }
+      },
+      {
+        "name": "say_call_connecting_agent",
+        "type": "say-play",
+        "transitions": [
+          {
+            "next": "connect_call_to_customer",
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "voice": "alice",
+          "offset": {
+            "x": 460,
+            "y": 470
+          },
+          "loop": 1,
+          "say": "Hi Kristian, we are connecting you to Claire now. Please hold.",
+          "language": "en-US"
+        }
+      },
+      {
+        "name": "connect_call_to_customer",
+        "type": "connect-call-to",
+        "transitions": [
+          {
+            "next": "create_task_record_in_sfdc",
+            "event": "callCompleted"
+          },
+          {
+            "next": "create_task_record_in_sfdc",
+            "event": "hangup"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 610,
+            "y": 740
+          },
+          "caller_id": "+16466994376",
+          "record": true,
+          "noun": "number",
+          "to": "+18722334717",
+          "timeout": 30
+        }
+      },
+      {
+        "name": "create_task_record_in_sfdc",
+        "type": "run-function",
+        "transitions": [
+          {
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 840,
+            "y": 1000
+          },
+          "url": "https://tumbleweed-guanaco-1464.twil.io/TestSFDC"
+        }
+      },
+      {
+        "name": "Check_SFDC_for_agent",
+        "type": "run-function",
+        "transitions": [
+          {
+            "next": "say_call_connecting_customer",
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -90,
+            "y": 220
+          },
+          "url": "https://tumbleweed-guanaco-1464.twil.io/TestSFDC"
+        }
+      },
+      {
+        "name": "connect_call_to_agent1",
+        "type": "connect-call-to",
+        "transitions": [
+          {
+            "next": "Copy_of_create_task_record_in_sfdc",
+            "event": "callCompleted"
+          },
+          {
+            "next": "Copy_of_create_task_record_in_sfdc",
+            "event": "hangup"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -370,
+            "y": 940
+          },
+          "caller_id": "{{contact.channel.address}}",
+          "noun": "number",
+          "to": "+6581234567",
+          "timeout": 30
+        }
+      },
+      {
+        "name": "Copy_of_create_task_record_in_sfdc",
+        "type": "run-function",
+        "transitions": [
+          {
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -500,
+            "y": 1160
+          },
+          "url": "https://tumbleweed-guanaco-1464.twil.io/TestSFDC"
+        }
+      },
+      {
+        "name": "say_call_connecting_customer",
+        "type": "say-play",
+        "transitions": [
+          {
+            "next": "Send_SMS_WA_to_Agent",
+            "event": "audioComplete"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -230,
+            "y": 480
+          },
+          "loop": 1,
+          "say": "Hi, please wait while we connect the call to your agent."
+        }
+      },
+      {
+        "name": "Send_SMS_WA_to_Agent",
+        "type": "run-function",
+        "transitions": [
+          {
+            "next": "connect_call_to_agent1",
+            "event": "success"
+          },
+          {
+            "event": "fail"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -280,
+            "y": 710
+          },
+          "url": "https://tumbleweed-guanaco-1464.twil.io/TestSFDC"
+        }
+      }
+    ],
+    "initial_state": "Trigger",
+    "flags": {
+      "allow_concurrent_calls": true
+    }
+  }
